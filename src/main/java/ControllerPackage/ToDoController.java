@@ -44,6 +44,7 @@ public class ToDoController {
     public void welcome() throws SQLException{
         //Display Welcome view
         System.out.println("Welcome to the ToDo app.");
+        System.out.println();
         //Get priority todos from CockroachHandler
         ToDoBean bean = new ToDoBean();
         bean.setPriority("true");
@@ -54,12 +55,14 @@ public class ToDoController {
         //else
             //No Priority view(?)
         System.out.println("*Your priority todos*");
+        System.out.println();
 
         for (ToDoBean b : priorities){
             System.out.print(b.getEvent());
             System.out.print(", created ");
-            System.out.print(b.getCreated());
+            System.out.println(b.getCreated());
         }
+        System.out.println();
         userMenu();
 
     }
@@ -75,7 +78,7 @@ public class ToDoController {
             System.out.print(count + ": "); 
             System.out.print(b.getEvent());
             System.out.print(", created ");
-            System.out.print(b.getCreated());
+            System.out.println(b.getCreated());
             count++;
         }
         System.out.println();
@@ -88,6 +91,7 @@ public class ToDoController {
         char sel = Character.toUpperCase(input.charAt(0));
         in.close();
         //Parse user input and go to selected activity.
+        System.out.println();
         switch(sel){
             case 'R':
                 read(wrap);
@@ -96,10 +100,10 @@ public class ToDoController {
                 create();
                 break;
             case 'U':
-                update();
+                update(wrap);
                 break;
             case 'D':
-                delete();
+                delete(wrap);
                 break;
             case 'Q':
                 quit();
@@ -135,13 +139,14 @@ public class ToDoController {
         String next = in.nextLine();
         char sel = Character.toUpperCase(next.charAt(0));
         in.close();
+        System.out.println();
 
         switch(sel){
             case 'U':
-                update();
+                update(wrap);
                 break;
             case 'D':
-                delete();
+                delete(wrap);
                 break;
             case 'M':
                 userMenu();
@@ -158,8 +163,10 @@ public class ToDoController {
     }
 
     //Update
+    public void update(ToDoWrapper wrap){
         //if (single todo is not specified)
             //Display Select ToDo view
+        System.out.println("Select ToDo to update");
             //Get user input on which todo to update
             //get selection from CockroachHandler
         //Send todo to DetailTodo view and display
@@ -172,8 +179,6 @@ public class ToDoController {
         //else
             //Send error text to Error view and display
         //return to UserMenu
-    public void update(){
-
     }
 
     //Create
@@ -198,7 +203,7 @@ public class ToDoController {
         //else
             //Send error text to Error view and display
         //return to UserMenu
-    public void delete(){
+    public void delete(ToDoWrapper wrap){
 
     }
 
