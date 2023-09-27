@@ -10,6 +10,7 @@ import org.postgresql.ds.PGSimpleDataSource;
 
 import JavaBeanPackage.ToDoBean;
 import ServicePackage.CockroachHandler;
+import ViewPackage.ToDoView;
 import WrapperPackage.ToDoWrapper;
 
 public class ToDoController {
@@ -17,15 +18,19 @@ public class ToDoController {
     private PGSimpleDataSource ds = new PGSimpleDataSource();
     private CockroachHandler handler = new CockroachHandler(ds);
     private Scanner in = new Scanner(System.in);
+    private ToDoView view = new ToDoView();
     
     //Initialize(?)
         //No idea what this looks like yet
             // *Maybe have db url hardcoded or passed by another object*
 
-    //Login
+    public ToDoController(){
+        
+    }
+
     public void login() throws SQLException{
         //Display Login view
-        System.out.println("Logging in...");
+        view.loginView();
 
         //Get user input for username and password
         //Create PGSimpleDataSource and fill fields with user input
@@ -38,43 +43,26 @@ public class ToDoController {
         //if (connection is good)
             //Connection Success view
             //proceed
+        view.loginSuccessView();
+        welcome();
         //else
             //Send error text to Error view and display
             //Allow user to try again (Maybe max # of retries?)
-        System.out.println("Success!");
-        welcome();
     }
 
-    //Welcome
     public void welcome() throws SQLException{
-        //Display Welcome view
-        System.out.println("Welcome to the ToDo app.");
-        System.out.println();
-
         //Get priority todos from CockroachHandler
         ToDoBean bean = new ToDoBean();
         bean.setPriority("true");
         ToDoWrapper results = handler.searchByPriority(bean);
         List<ToDoBean> priorities = results.getTodos();
 
-        //if (has priority todos)
-            //Send information to Priority view and display
-        //else
-            //No Priority view(?)
-        System.out.println("*Your priority todos*");
-        System.out.println();
-
-        for (ToDoBean b : priorities){
-            System.out.print(b.getEvent());
-            System.out.print(", created ");
-            System.out.println(b.getCreated());
-        }
-        System.out.println();
+        //Display Welcome view
+        view.welcomeView(priorities);
+       
         userMenu();
-
     }
 
-    //UserMenu (main repeating part of controller)
     public void userMenu() throws SQLException{
         //Set a couple boolean values to store if db was changed
         //or user doesnt want to continue
@@ -88,23 +76,12 @@ public class ToDoController {
                 refreshDB = false;
             }
 
-            //Send information to ToDo view and display
-            int count = 1;
-            System.out.println("Your ToDos:");
-            for (ToDoBean b : wrap.getTodos()){
-                System.out.print(count + ": "); 
-                System.out.print(b.getEvent());
-                System.out.print(", created ");
-                System.out.println(b.getCreated());
-                count++;
-            }
-            System.out.println();
-
-            //Display Menu view
-            System.out.print("(R)ead, (C)reate, (U)pdate, (D)elete, (Q)uit?: ");
+            //Send information to ToDo view and display Menu view
+            view.menuView(wrap.getTodos());
 
             //Get user input for what they would like to do
                 // *Other activities as program expands*
+            view.menuSelectView();
             in = new Scanner(System.in);
             String input = in.nextLine();
             char sel = Character.toUpperCase(input.charAt(0));
@@ -139,7 +116,7 @@ public class ToDoController {
         
     public void read(ToDoWrapper wrap) throws SQLException{
         //Display Select ToDo view
-        System.out.print("Select ToDo to read: ");
+        view.readView();
 
         //Get user input on which todo to read
         in = new Scanner(System.in);
@@ -151,16 +128,10 @@ public class ToDoController {
             //get selection from CoackroachHandler
         ToDoWrapper choice = handler.searchByID(wrap.getTodos().get(input));
             //Send todo to DetailTodo view and display
-        System.out.println("Selected ToDo:");
-        System.out.print(choice.getTodos().get(0).getEvent());
-        System.out.print(", created ");
-        System.out.println(choice.getTodos().get(0).getCreated() + ".");
-        System.out.println("Notes: " + choice.getTodos().get(0).getNotes());
-        System.out.println("Priority: " + choice.getTodos().get(0).getPriority());
-        System.out.println();
+        view.todoView(choice.getTodos().get(0));
 
             // Allow user to update or delete the ToDo, or return to main menu
-        System.out.print("(U)pdate, (D)elete, (M)ain menu?: ");
+        view.readSelectView();
         in = new Scanner(System.in);
         String next = in.nextLine();
         char sel = Character.toUpperCase(next.charAt(0));
@@ -183,11 +154,10 @@ public class ToDoController {
             //Try again (maybe return to top of method)
     }
 
-    //Update
     public void update(ToDoWrapper wrap){
         //if (single todo is not specified)
             //Display Select ToDo view
-        System.out.print("Select ToDo to update: ");
+        view.updateView();
 
             //Get user input on which todo to update
         in = new Scanner(System.in);
@@ -199,13 +169,10 @@ public class ToDoController {
         ToDoBean choice = wrap.getTodos().get(input);
 
         //Send todo to DetailTodo view and display
-        System.out.println("Event: " + choice.getEvent());
-        System.out.println("Notes: " + choice.getNotes());
-        System.out.println("Priority: " + choice.getPriority());
-        System.out.println();
+        view.todoView(choice);
 
         //Display UpdatdeTodo view
-        System.out.print("Update (Event), (N)otes, (P)riority?: ");
+        view.updateSelectView();
 
         //Get user input for which field to update
         in = new Scanner(System.in);
@@ -214,7 +181,7 @@ public class ToDoController {
         System.out.println();
 
         //Get user input for updated information
-        System.out.println("Enter update:");
+        view.updateInputView();
         in = new Scanner(System.in);
         String update = in.nextLine();
         System.out.println();
@@ -236,30 +203,32 @@ public class ToDoController {
 
         //if (success)
             //Display Successful Transaction view
-        System.out.println("Update successful!");
+        view.updateSuccessView();
 
         //else
             //Send error text to Error view and display
         //return to UserMenu
     }
 
-    //Create
     public void create(){
         //Display Create Todo view
-        System.out.println("Create new ToDo...");
+        view.createView();
 
         //Get user input for fields
-        System.out.print("New event: ");
+        view.createEventView();
         in = new Scanner(System.in);
         String event = in.nextLine();
         System.out.println();
-        System.out.print("Notes: ");
+
+        view.createNotesView();
         String notes = in.nextLine();
         System.out.println();
-        System.out.print("Make priority, (Y)es or (N)o: ");
+
+        view.createPriorityView();
         String priority = in.nextLine();
         char pri = Character.toUpperCase(priority.charAt(0));
         System.out.println();
+
         switch(pri){
             case 'Y':
                 priority = "true";
@@ -283,17 +252,16 @@ public class ToDoController {
 
         //if (success)
             //Display Successful Transaction view
-        System.out.println("Added ToDo!");
-        System.out.println();
+        view.createSuccessView();
+        
         //else
             //Send error text to Error view and display
         //return to UserMenu
     }
 
-    //Delete
     public void delete(ToDoWrapper wrap){
         //Display Delete Todo view
-        System.out.print("Select ToDo to delete: ");
+        view.deleteView();
 
         //Get user input for todo to delete
         in = new Scanner(System.in);
@@ -306,20 +274,15 @@ public class ToDoController {
 
         //if (success)
             //Display Successful Transaction view
-        System.out.println("ToDo deleted!");
-        System.out.println();
+        view.deleteSuccessView();
 
         //else
             //Send error text to Error view and display
         //return to UserMenu
     }
 
-    //Quit
-        //Display Closing Program view
-        //Close whatever needs closing and exit program
     public void quit(){
-        System.out.print("Goodbye");
-        System.out.println();
+        view.quitView();
         in.close();
         //Then returns to userMenu and falls through the switch statements to the end of the method.
     }
