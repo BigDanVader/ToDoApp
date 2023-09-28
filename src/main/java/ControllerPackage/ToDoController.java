@@ -4,12 +4,12 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Scanner;
 
 import org.postgresql.ds.PGSimpleDataSource;
 
 import JavaBeanPackage.ToDoBean;
 import ServicePackage.CockroachHandler;
+import TGUIPackage.TGUI;
 import ViewPackage.ToDoView;
 import WrapperPackage.ToDoWrapper;
 
@@ -17,8 +17,8 @@ public class ToDoController {
 
     private PGSimpleDataSource ds = new PGSimpleDataSource();
     private CockroachHandler handler = new CockroachHandler(ds);
-    private Scanner in = new Scanner(System.in);
     private ToDoView view = new ToDoView();
+    private TGUI gui = new TGUI();
     
     //Initialize(?)
         //No idea what this looks like yet
@@ -41,8 +41,6 @@ public class ToDoController {
         handler = new CockroachHandler(ds);
 
         //if (connection is good)
-            //Connection Success view
-            //proceed
         view.loginSuccessView();
         welcome();
         //else
@@ -57,7 +55,6 @@ public class ToDoController {
         ToDoWrapper results = handler.searchByPriority(bean);
         List<ToDoBean> priorities = results.getTodos();
 
-        //Display Welcome view
         view.welcomeView(priorities);
        
         userMenu();
@@ -76,19 +73,10 @@ public class ToDoController {
                 refreshDB = false;
             }
 
-            //Send information to ToDo view and display Menu view
             view.menuView(wrap.getTodos());
 
-            //Get user input for what they would like to do
-                // *Other activities as program expands*
             view.menuSelectView();
-            in = new Scanner(System.in);
-            String input = in.nextLine();
-            char sel = Character.toUpperCase(input.charAt(0));
-
-            //Parse user input and go to selected activity.
-            System.out.println();
-            switch(sel){
+            switch(gui.getCharSelection()){
                 case 'R':
                     read(wrap);
                     break;
@@ -119,10 +107,7 @@ public class ToDoController {
         view.readView();
 
         //Get user input on which todo to read
-        in = new Scanner(System.in);
-            //input - 1 to get actual selection
-        int input  = in.nextInt() - 1; 
-        System.out.println();
+        int input  = gui.getNumSelection();
 
         //if (selection exists)
             //get selection from CoackroachHandler
@@ -132,12 +117,8 @@ public class ToDoController {
 
             // Allow user to update or delete the ToDo, or return to main menu
         view.readSelectView();
-        in = new Scanner(System.in);
-        String next = in.nextLine();
-        char sel = Character.toUpperCase(next.charAt(0));
-        System.out.println();
 
-        switch(sel){
+        switch(gui.getCharSelection()){
             case 'U':
                 update(wrap);
                 break;
@@ -154,16 +135,14 @@ public class ToDoController {
             //Try again (maybe return to top of method)
     }
 
+    //Need overloaded method for when passing a selection from read()
     public void update(ToDoWrapper wrap){
         //if (single todo is not specified)
             //Display Select ToDo view
         view.updateView();
 
             //Get user input on which todo to update
-        in = new Scanner(System.in);
-                //input - 1 to get actual selection
-        int input  = in.nextInt() - 1;
-        System.out.println();
+        int input  = gui.getNumSelection();
 
             //get selection from CockroachHandler
         ToDoBean choice = wrap.getTodos().get(input);
@@ -175,16 +154,11 @@ public class ToDoController {
         view.updateSelectView();
 
         //Get user input for which field to update
-        in = new Scanner(System.in);
-        String next = in.nextLine();
-        char sel = Character.toUpperCase(next.charAt(0));
-        System.out.println();
+        char sel = gui.getCharSelection();
 
         //Get user input for updated information
         view.updateInputView();
-        in = new Scanner(System.in);
-        String update = in.nextLine();
-        System.out.println();
+        String update = gui.getStringSelection();
 
         //Bundle updated todo and send to CockroachHandler to update DB
         switch(sel){
@@ -200,14 +174,12 @@ public class ToDoController {
             default:
                 break;
         }
-
+        handler.update(choice);
         //if (success)
-            //Display Successful Transaction view
         view.updateSuccessView();
 
         //else
             //Send error text to Error view and display
-        //return to UserMenu
     }
 
     public void create(){
@@ -216,18 +188,14 @@ public class ToDoController {
 
         //Get user input for fields
         view.createEventView();
-        in = new Scanner(System.in);
-        String event = in.nextLine();
-        System.out.println();
+        String event = gui.getStringSelection();
 
         view.createNotesView();
-        String notes = in.nextLine();
-        System.out.println();
+        String notes = gui.getStringSelection();
 
         view.createPriorityView();
-        String priority = in.nextLine();
-        char pri = Character.toUpperCase(priority.charAt(0));
-        System.out.println();
+        String priority = "";
+        char pri = gui.getCharSelection();
 
         switch(pri){
             case 'Y':
@@ -259,14 +227,13 @@ public class ToDoController {
         //return to UserMenu
     }
 
+    //Need overloaded method for when passing a selection from read()
     public void delete(ToDoWrapper wrap){
         //Display Delete Todo view
         view.deleteView();
 
         //Get user input for todo to delete
-        in = new Scanner(System.in);
-        int select = in.nextInt() - 1;
-        System.out.println();
+        int select = gui.getNumSelection();
 
         //Send ID of selection to CockroachHandler
         ToDoBean bean = wrap.getTodos().get(select);
@@ -283,7 +250,7 @@ public class ToDoController {
 
     public void quit(){
         view.quitView();
-        in.close();
+        gui.close();
         //Then returns to userMenu and falls through the switch statements to the end of the method.
     }
 }

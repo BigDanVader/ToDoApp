@@ -84,7 +84,7 @@ public class ToDoView {
     }
 
     public void updateInputView(){
-        System.out.println("Enter update:");
+        System.out.print("Enter update:");
     }
 
     public void updateSuccessView(){
