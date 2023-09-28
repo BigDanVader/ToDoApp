@@ -18,14 +18,18 @@ import WrapperPackage.ToDoWrapper;
 
 public class CockroachHandler{
 
-    private Transaction transaction = new Transaction();
-    private CockroachDAO dao = new CockroachDAO(transaction);
+    private Transaction transaction;
+    private CockroachDAO dao;
 
+    //find out how to call this in the overloaded constructor
     public CockroachHandler(){
-        
+        transaction = new Transaction();
+        dao = new CockroachDAO(transaction);
     }
 
     public CockroachHandler(DataSource ds){
+        transaction = new Transaction();
+        dao = new CockroachDAO(transaction);
         setDataSource(ds);
     }
 
@@ -81,5 +85,12 @@ public class CockroachHandler{
         } catch (Exception e) {
             // TODO: handle exception
         }
-    }    
+    }
+    
+    public Boolean isValidConnection(){
+        if (transaction.getConnection() != null)
+            return true;
+        
+        return false;
+    }
 }

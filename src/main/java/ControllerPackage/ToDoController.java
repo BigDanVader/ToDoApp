@@ -15,17 +15,18 @@ import WrapperPackage.ToDoWrapper;
 
 public class ToDoController {
 
-    private PGSimpleDataSource ds = new PGSimpleDataSource();
-    private CockroachHandler handler = new CockroachHandler(ds);
-    private ToDoView view = new ToDoView();
-    private TGUI gui = new TGUI();
-    
-    //Initialize(?)
-        //No idea what this looks like yet
-            // *Maybe have db url hardcoded or passed by another object*
+    private PGSimpleDataSource ds;
+    private CockroachHandler handler;
+    private ToDoView view;
+    private TGUI gui;
+
+    private static final int MAX_RETRY_COUNT = 3;
 
     public ToDoController(){
-        
+        ds = new PGSimpleDataSource();
+        handler = new CockroachHandler(ds);
+        view = new ToDoView();
+        gui = new TGUI();
     }
 
     public void login() throws SQLException{
@@ -39,13 +40,21 @@ public class ToDoController {
         ds.setUser("demo_todo");
         ds.setPassword("oKDnWiZLElJt7pCal8KsDA");
         handler = new CockroachHandler(ds);
-
-        //if (connection is good)
-        view.loginSuccessView();
-        welcome();
-        //else
-            //Send error text to Error view and display
-            //Allow user to try again (Maybe max # of retries?)
+        int retryCount = 0;
+        
+        while (retryCount < MAX_RETRY_COUNT){
+            if (handler.isValidConnection()){
+                view.loginSuccessView();
+                welcome();
+                break;
+            }
+            else{
+                retryCount++;
+                System.out.println("Something went wrong.");
+                //Send error text to Error view and display
+                //Allow user to try again (Maybe max # of retries?)
+            }
+        }
     }
 
     public void welcome() throws SQLException{
