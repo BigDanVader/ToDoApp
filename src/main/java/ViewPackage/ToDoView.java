@@ -125,4 +125,14 @@ public class ToDoView {
         System.out.print("Goodbye");
         System.out.println();
     }
+
+    public void loginErrorView(String message) {
+        System.out.println(message);
+        System.out.println();
+    }
+
+    public void loginFailView() {
+        System.out.println("Max retrys attempted, closing program...");
+        System.out.println();
+    }
 }

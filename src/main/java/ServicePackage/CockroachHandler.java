@@ -27,13 +27,13 @@ public class CockroachHandler{
         dao = new CockroachDAO(transaction);
     }
 
-    public CockroachHandler(DataSource ds){
+    public CockroachHandler(DataSource ds) throws SQLException{
         transaction = new Transaction();
         dao = new CockroachDAO(transaction);
         setDataSource(ds);
     }
 
-    public void setDataSource(DataSource ds){
+    public void setDataSource(DataSource ds) throws SQLException{
         this.transaction.setDataSource(ds);
     }
 

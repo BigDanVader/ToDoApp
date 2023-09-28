@@ -21,19 +21,21 @@ public class Transaction {
 
     }
 
-    public Transaction(DataSource ds){
+    public Transaction(DataSource ds) throws SQLException{
         setDataSource(ds);
     }
 
-    public void setDataSource(DataSource data){
+    public void setDataSource(DataSource data) throws SQLException{
         this.ds = data;
+        createConnection();
     }
 
-    private void createConnection(){
+    //Trying throwing an error message. Trying to have thrown from CockroachHandler constructor
+    private void createConnection() throws SQLException{
         try {
             conn = ds.getConnection();
         } catch (SQLException e) {
-            printSQLError(e, "createConnection");
+            throw new SQLException(e.getMessage() + ". Please correct error and try again.");
         }
     }
 
@@ -48,7 +50,7 @@ public class Transaction {
         return conn;
     }
 
-    public void start(){
+    public void start() throws SQLException{
         createConnection();
         try {
             conn.setAutoCommit(false);

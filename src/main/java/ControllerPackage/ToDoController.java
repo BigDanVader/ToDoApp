@@ -24,7 +24,7 @@ public class ToDoController {
 
     public ToDoController(){
         ds = new PGSimpleDataSource();
-        handler = new CockroachHandler(ds);
+        handler = new CockroachHandler();
         view = new ToDoView();
         gui = new TGUI();
     }
@@ -37,24 +37,25 @@ public class ToDoController {
         //Create PGSimpleDataSource and fill fields with user input
         ds.setUrl("jdbc:postgresql://stoic-cat-3327.g95.cockroachlabs.cloud:26257/ToDoDB?sslmode=verify-full");
         ds.setSslMode( "require" );
-        ds.setUser("demo_todo");
+        //replace "o" at end when done error testing
+        ds.setUser("demo_tod");
         ds.setPassword("oKDnWiZLElJt7pCal8KsDA");
-        handler = new CockroachHandler(ds);
         int retryCount = 0;
         
         while (retryCount < MAX_RETRY_COUNT){
-            if (handler.isValidConnection()){
+            try {
+                handler = new CockroachHandler(ds);
                 view.loginSuccessView();
                 welcome();
                 break;
-            }
-            else{
+            } catch (SQLException e) {
                 retryCount++;
-                System.out.println("Something went wrong.");
-                //Send error text to Error view and display
-                //Allow user to try again (Maybe max # of retries?)
+                view.loginErrorView(e.getMessage());
             }
         }
+
+        view.loginFailView();
+        quit();
     }
 
     public void welcome() throws SQLException{
