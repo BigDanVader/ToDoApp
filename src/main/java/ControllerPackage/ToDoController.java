@@ -38,7 +38,6 @@ public class ToDoController {
         //Create PGSimpleDataSource and fill fields with user input
         ds.setUrl("jdbc:postgresql://stoic-cat-3327.g95.cockroachlabs.cloud:26257/ToDoDB?sslmode=verify-full");
         ds.setSslMode( "require" );
-        //replace "o" at end when done error testing
         ds.setUser("demo_todo");
         ds.setPassword("oKDnWiZLElJt7pCal8KsDA");
         int retryCount = 0;
