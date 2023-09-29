@@ -31,7 +31,6 @@ public class ToDoController {
     }
 
     public void login() throws SQLException{
-        //Display Login view
         view.loginView();
 
         //Get user input for username and password
@@ -47,6 +46,8 @@ public class ToDoController {
                 handler = new CockroachHandler(ds);
                 view.loginSuccessView();
                 welcome();
+                //Class returns here when we quit, so has to break out
+                //of while loop and travel to end of method
                 break;
             } catch (SQLException e) {
                 retryCount++;
@@ -63,12 +64,20 @@ public class ToDoController {
         }
     }
 
+    /**
+     * Creates a bean object and sets that bean's priority to true.
+     * This bean is used to call searchByPriority method from the
+     * @param handler object. This list of ToDoBeans that have a
+     * priority of true are then sent to the welcomeView method to be printed.
+     * 
+     * @throws SQLException
+     */
+    
     public void welcome() throws SQLException{
-        //Get priority todos from CockroachHandler
         ToDoBean bean = new ToDoBean();
         bean.setPriority("true");
-        ToDoWrapper results = handler.searchByPriority(bean);
-        List<ToDoBean> priorities = results.getTodos();
+        ToDoWrapper priorityResults = handler.searchByPriority(bean);
+        List<ToDoBean> priorities = priorityResults.getTodos();
 
         view.welcomeView(priorities);
        
@@ -76,19 +85,19 @@ public class ToDoController {
     }
 
     public void userMenu() throws SQLException{
-        //Set a couple boolean values to store if db was changed
-        //or user doesnt want to continue
         Boolean quitToDo = false;
+        //Fuck this. Convert wrap into beans straight from handler call.
         ToDoWrapper wrap = new ToDoWrapper();
 
         while (!quitToDo){
-            //Get user todos and metadata from CockroachHandler
             if (refreshDB){
                 wrap = handler.getAll();
                 refreshDB = false;
             }
 
-            view.menuView(wrap.getTodos());
+            List<ToDoBean> beans = wrap.getTodos();
+
+            view.menuView(beans);
 
             view.menuSelectView();
             switch(gui.getCharSelection()){
@@ -115,20 +124,16 @@ public class ToDoController {
     }
         
     public void read(ToDoWrapper wrap) throws SQLException{
-        //Display Select ToDo view
         view.readView();
 
-        //Get user input on which todo to read
         int input  = gui.getNumSelection();
-
         //if (selection exists)
             //get selection from CoackroachHandler
         ToDoWrapper choice = handler.searchByID(wrap.getTodos().get(input));
-            //Send todo to DetailTodo view and display
+            //Send todo to todoView and display
         ToDoBean bean = choice.getTodos().get(0);
         view.todoView(bean);
 
-            // Allow user to update or delete the ToDo, or return to main menu
         view.readSelectView();
 
         switch(gui.getCharSelection()){
@@ -148,19 +153,11 @@ public class ToDoController {
             //Try again (maybe return to top of method)
     }
 
-    //Need overloaded method for when passing a selection from read()
+
     public void updateSelect(ToDoWrapper wrap){
-        //if (single todo is not specified)
-            //Display Select ToDo view
         view.updateView();
-
-            //Get user input on which todo to update
         int input  = gui.getNumSelection();
-
-            //get selection from CockroachHandler
         ToDoBean choice = wrap.getTodos().get(input);
-
-        //Send todo to DetailTodo view and display
         view.todoView(choice);
 
         update(choice);
@@ -168,18 +165,12 @@ public class ToDoController {
     }
 
     private void update(ToDoBean bean){
-        //Display UpdatdeTodo view
         view.updateSelectView();
-
-        //Get user input for which field to update
-        char sel = gui.getCharSelection();
-
-        //Get user input for updated information
+        char userSelection = gui.getCharSelection();
         view.updateInputView();
         String update = gui.getStringSelection();
 
-        //Bundle updated todo and send to CockroachHandler to update DB
-        switch(sel){
+        switch(userSelection){
             case 'E':
                 bean.setEvent(update);
                 break;
@@ -192,6 +183,7 @@ public class ToDoController {
             default:
                 break;
         }
+
         handler.update(bean);
         //if (success)
         this.refreshDB = true;
@@ -202,10 +194,8 @@ public class ToDoController {
     }
 
     public void create(){
-        //Display Create Todo view
         view.createView();
 
-        //Get user input for fields
         view.createEventView();
         String event = gui.getStringSelection();
 
@@ -213,10 +203,10 @@ public class ToDoController {
         String notes = gui.getStringSelection();
 
         view.createPriorityView();
-        String priority = "";
-        char pri = gui.getCharSelection();
+        String priority = new String();
+        char priorityChoice = gui.getCharSelection();
 
-        switch(pri){
+        switch(priorityChoice){
             case 'Y':
                 priority = "true";
                 break;
@@ -227,7 +217,6 @@ public class ToDoController {
                 break;
         }
 
-        //Bundle new todo and send to CockroachHandler to update DB
         ToDoBean bean = new ToDoBean();
         bean.setEvent(event);
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");  
@@ -238,7 +227,6 @@ public class ToDoController {
         handler.create(bean);
 
         //if (success)
-            //Display Successful Transaction view
         this.refreshDB = true;
         view.createSuccessView();
         
@@ -247,15 +235,9 @@ public class ToDoController {
         //return to UserMenu
     }
 
-    //Need overloaded method for when passing a selection from read()
     public void deleteSelect(ToDoWrapper wrap){
-        //Display Delete Todo view
         view.deleteView();
-
-        //Get user input for todo to delete
         int select = gui.getNumSelection();
-
-        //Send ID of selection to CockroachHandler
         ToDoBean bean = wrap.getTodos().get(select);
 
         delete(bean);        
@@ -265,7 +247,6 @@ public class ToDoController {
         handler.delete(bean);
 
         //if (success)
-            //Display Successful Transaction view
         this.refreshDB = true;
         view.deleteSuccessView();
 
