@@ -15,17 +15,18 @@ import WrapperPackage.ToDoWrapper;
 
 public class ToDoController {
 
-    private PGSimpleDataSource ds = new PGSimpleDataSource();
-    private CockroachHandler handler = new CockroachHandler(ds);
-    private ToDoView view = new ToDoView();
-    private TGUI gui = new TGUI();
-    
-    //Initialize(?)
-        //No idea what this looks like yet
-            // *Maybe have db url hardcoded or passed by another object*
+    private PGSimpleDataSource ds;
+    private CockroachHandler handler;
+    private ToDoView view;
+    private TGUI gui;
+
+    private static final int MAX_RETRY_COUNT = 3;
 
     public ToDoController(){
-        
+        ds = new PGSimpleDataSource();
+        handler = new CockroachHandler();
+        view = new ToDoView();
+        gui = new TGUI();
     }
 
     public void login() throws SQLException{
@@ -36,16 +37,25 @@ public class ToDoController {
         //Create PGSimpleDataSource and fill fields with user input
         ds.setUrl("jdbc:postgresql://stoic-cat-3327.g95.cockroachlabs.cloud:26257/ToDoDB?sslmode=verify-full");
         ds.setSslMode( "require" );
+        //replace "o" at end when done error testing
         ds.setUser("demo_todo");
         ds.setPassword("oKDnWiZLElJt7pCal8KsDA");
-        handler = new CockroachHandler(ds);
+        int retryCount = 0;
+        
+        while (retryCount < MAX_RETRY_COUNT){
+            try {
+                handler = new CockroachHandler(ds);
+                view.loginSuccessView();
+                welcome();
+                break;
+            } catch (SQLException e) {
+                retryCount++;
+                view.loginErrorView(e.getMessage());
+            }
+        }
 
-        //if (connection is good)
-        view.loginSuccessView();
-        welcome();
-        //else
-            //Send error text to Error view and display
-            //Allow user to try again (Maybe max # of retries?)
+        view.loginFailView();
+        quit();
     }
 
     public void welcome() throws SQLException{
