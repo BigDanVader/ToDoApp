@@ -20,6 +20,7 @@ public class ToDoController {
     private ToDoView view;
     private TGUI gui;
     private Boolean refreshDB = true;
+    private List<ToDoBean> beans;
 
     private static final int MAX_RETRY_COUNT = 3;
 
@@ -30,22 +31,28 @@ public class ToDoController {
         gui = new TGUI();
     }
 
-    public void login() throws SQLException{
+    public void start() throws SQLException{
+        //Maybe move initial ds construction and testing here
+        //Then do user login at login
+        login();
+    }
+
+    private void login() throws SQLException{
         view.loginView();
 
         //Get user input for username and password
         //Create PGSimpleDataSource and fill fields with user input
-        ds.setUrl("jdbc:postgresql://stoic-cat-3327.g95.cockroachlabs.cloud:26257/ToDoDB?sslmode=verify-full");
-        ds.setSslMode( "require" );
-        ds.setUser("demo_todo");
-        ds.setPassword("oKDnWiZLElJt7pCal8KsDA");
+        this.ds.setUrl("jdbc:postgresql://stoic-cat-3327.g95.cockroachlabs.cloud:26257/ToDoDB?sslmode=verify-full");
+        this.ds.setSslMode( "require" );
+        this.ds.setUser("demo_todo");
+        this.ds.setPassword("oKDnWiZLElJt7pCal8KsDA");
         int retryCount = 0;
         
         while (retryCount < MAX_RETRY_COUNT){
             try {
-                handler = new CockroachHandler(ds);
+                this.handler = new CockroachHandler(ds);
                 view.loginSuccessView();
-                welcome();
+                userMenu();
                 //Class returns here when we quit, so has to break out
                 //of while loop and travel to end of method
                 break;
@@ -73,45 +80,41 @@ public class ToDoController {
      * @throws SQLException
      */
     
-    public void welcome() throws SQLException{
+    private void welcome() throws SQLException{
         ToDoBean bean = new ToDoBean();
         bean.setPriority("true");
-        ToDoWrapper priorityResults = handler.searchByPriority(bean);
+        ToDoWrapper priorityResults = this.handler.searchByPriority(bean);
         List<ToDoBean> priorities = priorityResults.getTodos();
 
         view.welcomeView(priorities);
-       
-        userMenu();
     }
 
-    public void userMenu() throws SQLException{
+    private void userMenu() throws SQLException{
+        welcome();
         Boolean quitToDo = false;
-        //Fuck this. Convert wrap into beans straight from handler call.
-        ToDoWrapper wrap = new ToDoWrapper();
 
         while (!quitToDo){
-            if (refreshDB){
-                wrap = handler.getAll();
+            if (this.refreshDB){
+                this.beans = this.handler.getAll().getTodos();
                 refreshDB = false;
             }
 
-            List<ToDoBean> beans = wrap.getTodos();
-
-            view.menuView(beans);
+            view.menuView(this.beans);
 
             view.menuSelectView();
-            switch(gui.getCharSelection()){
+            char userSelection = this.gui.getCharSelection();
+            switch(userSelection){
                 case 'R':
-                    read(wrap);
+                    read();
                     break;
                 case 'C':
                     create();
                     break;
                 case 'U':
-                    updateSelect(wrap);
+                    updateSelect();
                     break;
                 case 'D':
-                    deleteSelect(wrap);
+                    deleteSelect();
                     break;
                 case 'Q':
                     quit();
@@ -123,15 +126,15 @@ public class ToDoController {
         }
     }
         
-    public void read(ToDoWrapper wrap) throws SQLException{
+    private void read() throws SQLException{
         view.readView();
 
         int input  = gui.getNumSelection();
-        //if (selection exists)
-            //get selection from CoackroachHandler
-        ToDoWrapper choice = handler.searchByID(wrap.getTodos().get(input));
-            //Send todo to todoView and display
+        //if (selection doesnt exist)
+            //Display error and have user try again or crash back to main menu
+        ToDoWrapper choice = this.handler.searchByID(this.beans.get(input));
         ToDoBean bean = choice.getTodos().get(0);
+
         view.todoView(bean);
 
         view.readSelectView();
@@ -148,16 +151,13 @@ public class ToDoController {
             default:
                 break;
         }
-        //else
-            //Send error test to Error view and display
-            //Try again (maybe return to top of method)
     }
 
 
-    public void updateSelect(ToDoWrapper wrap){
+    private void updateSelect(){
         view.updateView();
-        int input  = gui.getNumSelection();
-        ToDoBean choice = wrap.getTodos().get(input);
+        int input  = this.gui.getNumSelection();
+        ToDoBean choice = this.beans.get(input);
         view.todoView(choice);
 
         update(choice);
@@ -166,9 +166,9 @@ public class ToDoController {
 
     private void update(ToDoBean bean){
         view.updateSelectView();
-        char userSelection = gui.getCharSelection();
+        char userSelection = this.gui.getCharSelection();
         view.updateInputView();
-        String update = gui.getStringSelection();
+        String update = this.gui.getStringSelection();
 
         switch(userSelection){
             case 'E':
@@ -184,27 +184,28 @@ public class ToDoController {
                 break;
         }
 
-        handler.update(bean);
+        this.handler.update(bean);
         //if (success)
         this.refreshDB = true;
         view.updateSuccessView();
 
         //else
             //Send error text to Error view and display
+            //return to user menu
     }
 
-    public void create(){
+    private void create(){
         view.createView();
 
         view.createEventView();
-        String event = gui.getStringSelection();
+        String event = this.gui.getStringSelection();
 
         view.createNotesView();
-        String notes = gui.getStringSelection();
+        String notes = this.gui.getStringSelection();
 
         view.createPriorityView();
         String priority = new String();
-        char priorityChoice = gui.getCharSelection();
+        char priorityChoice = this.gui.getCharSelection();
 
         switch(priorityChoice){
             case 'Y':
@@ -224,7 +225,7 @@ public class ToDoController {
         bean.setCreated(dtf.format(now));
         bean.setNotes(notes);
         bean.setPriority(priority);
-        handler.create(bean);
+        this.handler.create(bean);
 
         //if (success)
         this.refreshDB = true;
@@ -235,16 +236,16 @@ public class ToDoController {
         //return to UserMenu
     }
 
-    public void deleteSelect(ToDoWrapper wrap){
+    private void deleteSelect(){
         view.deleteView();
-        int select = gui.getNumSelection();
-        ToDoBean bean = wrap.getTodos().get(select);
+        int select = this.gui.getNumSelection();
+        ToDoBean bean = this.beans.get(select);
 
         delete(bean);        
     }
 
     private void delete(ToDoBean bean){
-        handler.delete(bean);
+        this.handler.delete(bean);
 
         //if (success)
         this.refreshDB = true;
@@ -255,9 +256,9 @@ public class ToDoController {
         //return to UserMenu
     }
 
-    public void quit(){
+    private void quit(){
         view.quitView();
-        gui.close();
+        this.gui.close();
         //Then returns to userMenu and falls through the switch statements to the end of the method.
     }
 }

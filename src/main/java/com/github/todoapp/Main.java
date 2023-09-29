@@ -6,6 +6,6 @@ import ControllerPackage.ToDoController;
 public class Main {
     public static void main(String[] args) throws SQLException {
         ToDoController ctr = new ToDoController();
-        ctr.login();
+        ctr.start();
     }
 }
