@@ -1,5 +1,6 @@
 package ControllerPackage;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -7,6 +8,7 @@ import java.util.List;
 
 import org.postgresql.ds.PGSimpleDataSource;
 
+import BuilderPackage.DSBuilder;
 import JavaBeanPackage.ToDoBean;
 import ServicePackage.CockroachHandler;
 import TGUIPackage.TGUI;
@@ -31,21 +33,19 @@ public class ToDoController {
         gui = new TGUI();
     }
 
-    public void start() throws SQLException{
+    public void start() throws SQLException, IOException{
         //Maybe move initial ds construction and testing here
         //Then do user login at login
         login();
     }
 
-    private void login() throws SQLException{
+    private void login() throws SQLException, IOException{
         view.loginView();
 
         //Get user input for username and password
         //Create PGSimpleDataSource and fill fields with user input
-        this.ds.setUrl("jdbc:postgresql://stoic-cat-3327.g95.cockroachlabs.cloud:26257/ToDoDB?sslmode=verify-full");
-        this.ds.setSslMode( "require" );
-        this.ds.setUser("demo_todo");
-        this.ds.setPassword("oKDnWiZLElJt7pCal8KsDA");
+        DSBuilder builder = new DSBuilder();
+        this.ds = builder.buildDS();
         int retryCount = 0;
         
         while (retryCount < MAX_RETRY_COUNT){
