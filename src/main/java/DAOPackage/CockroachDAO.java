@@ -104,11 +104,9 @@ public class CockroachDAO {
                     // through the loop we sleep for a little
                     // longer than the last time
                     // (A.K.A. exponential backoff).
-                    System.out.printf("retryable exception occurred:\n    sql state = [%s]\n    message = [%s]\n    retry counter = %s\n", e.getSQLState(), e.getMessage(), retryCount);
                     this.transaction.rollback();
                     retryCount++;
                     int sleepMillis = (int)(Math.pow(2, retryCount) * 100) + rand.nextInt(100);
-                    System.out.printf("Hit 40001 retry error, sleeping %s milliseconds\n", sleepMillis);
 
                     try {
                         Thread.sleep(sleepMillis);
@@ -130,7 +128,6 @@ public class CockroachDAO {
         List<ToDoBean> results = new ArrayList<>();
         List<String> metadata = new ArrayList<>();
 
-        try {
             while (rs.next()){
                 ToDoBean bean = new ToDoBean();
                 bean.setUuid(rs.getString("id"));
@@ -140,10 +137,6 @@ public class CockroachDAO {
                 bean.setPriority(rs.getString("priority"));
                 results.add(bean);
             }
-        } catch (SQLException e) {
-            System.out.printf("PostgreSQLHandler.convert ERROR: { state => %s, cause => %s, message => %s }\n",
-                              e.getSQLState(), e.getCause(), e.getMessage());
-        }
 
         for (int i = 1; i <= rsmd.getColumnCount(); i++){
             String str = rsmd.getColumnName(i);

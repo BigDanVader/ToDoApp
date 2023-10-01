@@ -33,6 +33,7 @@ public class TGUI {
     }
 
     public void close(){
-        in.close();
+        if (in != null)
+            in.close();
     }
 }

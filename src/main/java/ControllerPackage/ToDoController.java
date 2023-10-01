@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.InputMismatchException;
 import java.util.List;
 
 import org.postgresql.ds.PGSimpleDataSource;
@@ -33,41 +34,37 @@ public class ToDoController {
         gui = new TGUI();
     }
 
-    public void start() throws SQLException, IOException{
-        //Maybe move initial ds construction and testing here
-        //Then do user login at login
+    public void start(){
         login();
     }
 
-    private void login() throws SQLException, IOException{
+    private void login(){
         view.loginView();
 
-        //Get user input for username and password
-        //Create PGSimpleDataSource and fill fields with user input
         DSBuilder builder = new DSBuilder();
-        this.ds = builder.buildDS();
-        int retryCount = 0;
+        try {
+            this.ds = builder.buildDS();
+            int retryCount = 0;
         
-        while (retryCount < MAX_RETRY_COUNT){
-            try {
-                this.handler = new CockroachHandler(ds);
-                view.loginSuccessView();
-                userMenu();
-                //Class returns here when we quit, so has to break out
-                //of while loop and travel to end of method
-                break;
-            } catch (SQLException e) {
-                retryCount++;
-                view.loginErrorView(e.getMessage());
+            while (retryCount < MAX_RETRY_COUNT){
+                try {
+                    this.handler = new CockroachHandler(ds);
+                    view.loginSuccessView();
+                    welcome();
+                } catch (SQLException e) {
+                    retryCount++;
+                    //pass stuff to custom logger class;
+                }
             }
-        }
 
-        if (retryCount == MAX_RETRY_COUNT){
-            view.loginFailView();
+            if (retryCount == MAX_RETRY_COUNT){
+                view.loginFailView();
+                quit();
+            }
+        } catch (IOException e) {
+            // TODO: Pass stuff to custom logger class
+            view.loginErrorView();
             quit();
-        }
-        else{
-            //This is where class actully stops running
         }
     }
 
@@ -80,96 +77,160 @@ public class ToDoController {
      * @throws SQLException
      */
     
-    private void welcome() throws SQLException{
+    private void welcome(){
         ToDoBean bean = new ToDoBean();
         bean.setPriority("true");
-        ToDoWrapper priorityResults = this.handler.searchByPriority(bean);
-        List<ToDoBean> priorities = priorityResults.getTodos();
-
-        view.welcomeView(priorities);
+        ToDoWrapper priorityResults;
+        try {
+            priorityResults = this.handler.searchByPriority(bean);
+            List<ToDoBean> priorities = priorityResults.getTodos();
+            view.welcomeView(priorities);
+            userMenu();
+        } catch (SQLException e) {
+            // TODO Pass stuff to custom logger class
+            view.databaseErrorView();
+            quit();
+        }
     }
 
-    private void userMenu() throws SQLException{
-        welcome();
-        Boolean quitToDo = false;
-
-        while (!quitToDo){
+    private void userMenu(){
+        //Loop is intended to run infinitely until user elects to quit program
+        while (true){
             if (this.refreshDB){
-                this.beans = this.handler.getAll().getTodos();
-                refreshDB = false;
+                try {
+                    this.beans = this.handler.getAll().getTodos();
+                    refreshDB = false;
+                } catch (SQLException e) {
+                    // TODO Pass stuff to custom logger class
+                    view.databaseErrorView();
+                    quit(); 
+                }
             }
 
             view.menuView(this.beans);
 
-            view.menuSelectView();
-            char userSelection = this.gui.getCharSelection();
-            switch(userSelection){
-                case 'R':
-                    read();
-                    break;
-                case 'C':
-                    create();
-                    break;
-                case 'U':
-                    updateSelect();
-                    break;
-                case 'D':
-                    deleteSelect();
-                    break;
-                case 'Q':
-                    quit();
-                    quitToDo = true;
-                    break;
-                default:
-                    break;
-            }
+            Boolean isIncorrectInput;
+            do{
+                isIncorrectInput = false;
+                view.menuSelectView();
+                char userSelection = this.gui.getCharSelection();
+                switch(userSelection){
+                    case 'R':
+                        read();
+                        break;
+                    case 'C':
+                        create();
+                        break;
+                    case 'U':
+                        updateSelect();
+                        break;
+                    case 'D':
+                        deleteSelect();
+                        break;
+                    case 'Q':
+                        quit();
+                        break;
+                    default:
+                        isIncorrectInput = true;
+                        view.inputErrorView();
+                        break;
+                }
+            } while (isIncorrectInput);
         }
     }
         
-    private void read() throws SQLException{
-        view.readView();
+    private void read(){
+        int input = 0;
+        Boolean isIncorrect;
+        do{
+            isIncorrect = false;
+            view.readView();
+            try{
+                input  = gui.getNumSelection();
+                if (input < 0 || input >= this.beans.size()){
+                    isIncorrect = true;
+                    view.inputErrorView();
+                }
+            }catch (InputMismatchException e){
+                //No need to log. Essentially the same as an input error
+                isIncorrect = true;
+                view.inputErrorView();
+            }
+        }while (isIncorrect);
 
-        int input  = gui.getNumSelection();
-        //if (selection doesnt exist)
-            //Display error and have user try again or crash back to main menu
-        ToDoWrapper choice = this.handler.searchByID(this.beans.get(input));
-        ToDoBean bean = choice.getTodos().get(0);
+        ToDoWrapper choice;
+        try {
+            choice = this.handler.searchByID(this.beans.get(input));
+            ToDoBean bean = choice.getTodos().get(0);
 
-        view.todoView(bean);
+            view.todoView(bean);
 
-        view.readSelectView();
-
-        switch(gui.getCharSelection()){
-            case 'U':
-                update(bean);
-                break;
-            case 'D':
-                delete(bean);
-                break;
-            case 'M':
-                break;
-            default:
-                break;
+            Boolean isIncorrectInput;
+            do{
+                isIncorrectInput = false;
+                view.readSelectView();
+                char userSelection = this.gui.getCharSelection();
+                switch(userSelection){
+                    case 'U':
+                        update(bean);
+                        break;
+                    case 'D':
+                        delete(bean);
+                        break;
+                    case 'M':
+                        break;
+                    default:
+                        isIncorrectInput = true;
+                        view.inputErrorView();
+                        break;
+                }
+            }while (isIncorrectInput);
+        } catch (SQLException e) {
+            // TODO Pass stuff to custom logger class
+            view.dbLookupError();
         }
     }
 
 
     private void updateSelect(){
-        view.updateView();
-        int input  = this.gui.getNumSelection();
-        ToDoBean choice = this.beans.get(input);
+        int input = 0;
+        ToDoBean choice = new ToDoBean();
+        Boolean isIncorrect;
+        do{
+            isIncorrect = false;
+            view.updateView();
+            try{
+                input  = this.gui.getNumSelection();
+                if (input < 0 || input >= this.beans.size()){
+                    isIncorrect = true;
+                    view.inputErrorView();
+                }
+            }catch (InputMismatchException e){
+                //No need to log. Essentially the same as an input error
+                isIncorrect = true;
+                view.inputErrorView();
+            }
+        }while (isIncorrect);
+        choice = this.beans.get(input);
         view.todoView(choice);
 
         update(choice);
         
     }
 
+    //Updating priority is vague and doesnt have proper input checking for y/n
+    //Exception handling worked just fine, though.
     private void update(ToDoBean bean){
         view.updateSelectView();
+
         char userSelection = this.gui.getCharSelection();
+        while (userSelection != 'E' && userSelection != 'N' && userSelection != 'P'){
+            view.inputErrorView();
+            view.updateSelectView();
+            userSelection = this.gui.getCharSelection();
+        }
         view.updateInputView();
         String update = this.gui.getStringSelection();
-
         switch(userSelection){
             case 'E':
                 bean.setEvent(update);
@@ -184,14 +245,14 @@ public class ToDoController {
                 break;
         }
 
-        this.handler.update(bean);
-        //if (success)
-        this.refreshDB = true;
-        view.updateSuccessView();
-
-        //else
-            //Send error text to Error view and display
-            //return to user menu
+        try {
+            this.handler.update(bean);
+            this.refreshDB = true;
+            view.updateSuccessView();
+        } catch (SQLException e) {
+            // TODO Pass stuff to custom logger class
+            view.updateErrorView();
+        }
     }
 
     private void create(){
@@ -203,20 +264,26 @@ public class ToDoController {
         view.createNotesView();
         String notes = this.gui.getStringSelection();
 
-        view.createPriorityView();
         String priority = new String();
-        char priorityChoice = this.gui.getCharSelection();
+        Boolean isIncorrectInput;
+        do{
+            isIncorrectInput = false;
+            view.createPriorityView();
+            char priorityChoice = this.gui.getCharSelection();
 
-        switch(priorityChoice){
-            case 'Y':
-                priority = "true";
-                break;
-            case 'N':
-                priority = "false";
-                break;
-            default:
-                break;
-        }
+            switch(priorityChoice){
+                case 'Y':
+                    priority = "true";
+                    break;
+                case 'N':
+                    priority = "false";
+                    break;
+                default:
+                    isIncorrectInput = true;
+                    view.inputErrorView();
+                    break;
+            }
+        }while (isIncorrectInput);
 
         ToDoBean bean = new ToDoBean();
         bean.setEvent(event);
@@ -225,40 +292,54 @@ public class ToDoController {
         bean.setCreated(dtf.format(now));
         bean.setNotes(notes);
         bean.setPriority(priority);
-        this.handler.create(bean);
-
-        //if (success)
-        this.refreshDB = true;
-        view.createSuccessView();
         
-        //else
-            //Send error text to Error view and display
-        //return to UserMenu
+        try {
+            this.handler.create(bean);
+            this.refreshDB = true;
+            view.createSuccessView();
+        } catch (SQLException e) {
+            // TODO Pass stuff to custom logger class
+            view.createErrorView();
+        }
     }
 
     private void deleteSelect(){
-        view.deleteView();
-        int select = this.gui.getNumSelection();
-        ToDoBean bean = this.beans.get(select);
+        int input = 0;
+        Boolean isIncorrect;
+        do{
+            isIncorrect = false;
+            view.deleteView();
+            try{
+                input = this.gui.getNumSelection();
+                if (input < 0 || input >= this.beans.size()){
+                    isIncorrect = true;
+                    view.inputErrorView();
+                }
+            }catch (InputMismatchException e){
+                //No need to log. Essentially the same as an input error
+                isIncorrect = true;
+                view.inputErrorView();
+            }
+        }while (isIncorrect);
 
+        ToDoBean bean = this.beans.get(input);
         delete(bean);        
     }
 
     private void delete(ToDoBean bean){
-        this.handler.delete(bean);
-
-        //if (success)
-        this.refreshDB = true;
-        view.deleteSuccessView();
-
-        //else
-            //Send error text to Error view and display
-        //return to UserMenu
+        try {
+            this.handler.delete(bean);
+            this.refreshDB = true;
+            view.deleteSuccessView();
+        } catch (SQLException e) {
+            // TODO Pass stuff to custom logger class
+            view.deleteErrorView();
+        }
     }
 
     private void quit(){
         view.quitView();
         this.gui.close();
-        //Then returns to userMenu and falls through the switch statements to the end of the method.
+        System.exit(0);
     }
 }

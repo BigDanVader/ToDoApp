@@ -126,13 +126,40 @@ public class ToDoView {
         System.out.println();
     }
 
-    public void loginErrorView(String message) {
-        System.out.println(message);
-        System.out.println();
+    public void loginErrorView() {
+        System.out.println("Unable to log in. Please consult error log. Closing program...");
     }
 
     public void loginFailView() {
         System.out.println("Max retrys attempted, closing program...");
+        System.out.println();
+    }
+
+    public void databaseErrorView() {
+        System.out.println("Error in contacting database. Closing program...");
+    }
+
+    public void inputErrorView() {
+        System.out.println("Input not recognized. Please try again.");
+    }
+
+    public void dbLookupError() {
+        System.out.println("Error finding todo in database. Returning to menu...");
+        System.out.println();
+    }
+
+    public void updateErrorView() {
+        System.out.println("Unable to update todo. Returning to menu...");
+        System.out.println();
+    }
+
+    public void createErrorView() {
+        System.out.println("Unable to create todo. Returning to menu...");
+        System.out.println();
+    }
+
+    public void deleteErrorView() {
+        System.out.println("Unable to delete todo. Returning to menu...");
         System.out.println();
     }
 }
