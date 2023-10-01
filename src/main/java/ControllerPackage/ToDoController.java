@@ -205,29 +205,52 @@ public class ToDoController {
     //Updating priority is vague and doesnt have proper input checking for y/n
     //Exception handling worked just fine, though.
     private void update(ToDoBean bean){
-        view.updateSelectView();
+        Boolean isIncorrectInput;
+        String update = "";
 
-        char userSelection = this.gui.getCharSelection();
-        while (userSelection != 'E' && userSelection != 'N' && userSelection != 'P'){
-            view.inputErrorView();
+        do{
+            isIncorrectInput = false;
             view.updateSelectView();
-            userSelection = this.gui.getCharSelection();
-        }
-        view.updateInputView();
-        String update = this.gui.getStringSelection();
-        switch(userSelection){
-            case 'E':
-                bean.setEvent(update);
-                break;
-            case 'N':
-                bean.setNotes(update);
-                break;
-            case 'P':
-                bean.setPriority(update);
-                break;
-            default:
-                break;
-        }
+            char userSelection = this.gui.getCharSelection();
+            
+            switch(userSelection){
+                case 'E':
+                    view.updateEventView();
+                    update = this.gui.getStringSelection();
+                    bean.setEvent(update);
+                    break;
+                case 'N':
+                    view.updateNotesView();
+                    update = this.gui.getStringSelection();
+                    bean.setNotes(update);
+                    break;
+                case 'P':
+                    do{
+                        isIncorrectInput = false;
+                        view.updatePriorityView();;
+                        char priorityChoice = this.gui.getCharSelection();
+
+                        switch(priorityChoice){
+                            case 'Y':
+                                update = "true";
+                                break;
+                            case 'N':
+                                update = "false";
+                                break;
+                            default:
+                                isIncorrectInput = true;
+                                view.inputErrorView();
+                                break;
+                        }
+                    }while (isIncorrectInput);
+                    bean.setPriority(update);
+                    break;
+                default:
+                    isIncorrectInput = true;
+                    view.inputErrorView();
+                    break;
+            }
+        }while(isIncorrectInput);
 
         try {
             this.handler.update(bean);

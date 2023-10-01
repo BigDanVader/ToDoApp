@@ -83,10 +83,6 @@ public class ToDoView {
         System.out.print("Update (Event), (N)otes, (P)riority?: ");
     }
 
-    public void updateInputView(){
-        System.out.print("Enter update:");
-    }
-
     public void updateSuccessView(){
         System.out.println("Update successful!");
     }
@@ -161,5 +157,17 @@ public class ToDoView {
     public void deleteErrorView() {
         System.out.println("Unable to delete todo. Returning to menu...");
         System.out.println();
+    }
+
+    public void updateEventView() {
+        System.out.print("Enter update for Event: ");
+    }
+
+    public void updateNotesView() {
+        System.out.print("Enter update for Notes: ");
+    }
+
+    public void updatePriorityView() {
+        System.out.print("Make priority, (Y)es or (N)o: ");
     }
 }
