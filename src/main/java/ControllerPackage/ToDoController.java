@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.InputMismatchException;
 import java.util.List;
 
 import org.postgresql.ds.PGSimpleDataSource;
@@ -22,8 +21,9 @@ public class ToDoController {
     private CockroachHandler handler;
     private ToDoView view;
     private TGUI gui;
-    private Boolean refreshDB = true;
     private List<ToDoBean> beans;
+    private Boolean refreshDB = true;
+
 
     private static final int MAX_RETRY_COUNT = 3;
 
@@ -53,7 +53,7 @@ public class ToDoController {
                     welcome();
                 } catch (SQLException e) {
                     retryCount++;
-                    //pass stuff to custom logger class;
+                    // TODO pass stuff to custom logger class;
                 }
             }
 
@@ -140,23 +140,17 @@ public class ToDoController {
     }
         
     private void read(){
-        int input = 0;
-        Boolean isIncorrect;
-        do{
-            isIncorrect = false;
+        int input;
+        view.readView();
+            
+        input  = gui.getNumSelection();
+        while (input <= 0 || input > this.beans.size()){
+            view.inputErrorView();
             view.readView();
-            try{
-                input  = gui.getNumSelection();
-                if (input < 0 || input >= this.beans.size()){
-                    isIncorrect = true;
-                    view.inputErrorView();
-                }
-            }catch (InputMismatchException e){
-                //No need to log. Essentially the same as an input error
-                isIncorrect = true;
-                view.inputErrorView();
-            }
-        }while (isIncorrect);
+            input  = gui.getNumSelection();
+        }
+        //Subtracting 1 from user selection to match intended index of beans arraylist
+        input -= 1;
 
         ToDoWrapper choice;
         try {
@@ -191,29 +185,19 @@ public class ToDoController {
         }
     }
 
-
     private void updateSelect(){
-        int input = 0;
-        ToDoBean choice = new ToDoBean();
-        Boolean isIncorrect;
-        do{
-            isIncorrect = false;
+        view.updateView();
+        int input  = this.gui.getNumSelection();
+        while (input <= 0 || input > this.beans.size()){
+            view.inputErrorView();
             view.updateView();
-            try{
-                input  = this.gui.getNumSelection();
-                if (input < 0 || input >= this.beans.size()){
-                    isIncorrect = true;
-                    view.inputErrorView();
-                }
-            }catch (InputMismatchException e){
-                //No need to log. Essentially the same as an input error
-                isIncorrect = true;
-                view.inputErrorView();
-            }
-        }while (isIncorrect);
-        choice = this.beans.get(input);
+            input  = this.gui.getNumSelection();
+        }
+        //Subtracting 1 from user selection to match intended index of beans arraylist
+        input -= 1;
+  
+        ToDoBean choice = this.beans.get(input);
         view.todoView(choice);
-
         update(choice);
         
     }
@@ -303,24 +287,18 @@ public class ToDoController {
         }
     }
 
+    //Change this to subtract one from user input to match array structure
+    //Also don't need error checking on getNumSelection
     private void deleteSelect(){
-        int input = 0;
-        Boolean isIncorrect;
-        do{
-            isIncorrect = false;
+        view.deleteView();
+        int input = this.gui.getNumSelection();
+        while (input <= 0 || input > this.beans.size()){
+            view.inputErrorView();
             view.deleteView();
-            try{
-                input = this.gui.getNumSelection();
-                if (input < 0 || input >= this.beans.size()){
-                    isIncorrect = true;
-                    view.inputErrorView();
-                }
-            }catch (InputMismatchException e){
-                //No need to log. Essentially the same as an input error
-                isIncorrect = true;
-                view.inputErrorView();
-            }
-        }while (isIncorrect);
+            input = this.gui.getNumSelection();
+        }
+        //Subtracting 1 from user selection to match intended index of beans arraylist
+        input -= 1;
 
         ToDoBean bean = this.beans.get(input);
         delete(bean);        

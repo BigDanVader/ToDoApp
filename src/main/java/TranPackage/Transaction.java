@@ -30,7 +30,6 @@ public class Transaction {
         createConnection();
     }
 
-    //Trying throwing an error message. Trying to have thrown from CockroachHandler constructor
     private void createConnection() throws SQLException{
         conn = ds.getConnection();
     }
