@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import JavaBeanPackage.ToDoBean;
 import TranPackage.Transaction;
@@ -23,7 +25,7 @@ import WrapperPackage.ToDoWrapper;
  */
 
 public class CockroachDAO {
-
+    private static final Logger LOGGER = Logger.getLogger(CockroachDAO.class.getName());
     private static final int MAX_RETRY_COUNT = 3;
     private static final String RETRY_SQL_STATE = "40001";
 
@@ -97,6 +99,7 @@ public class CockroachDAO {
                 break;
 
             } catch (SQLException e) {
+                LOGGER.log(Level.SEVERE, e.toString(), e);
                 if (RETRY_SQL_STATE.equals(e.getSQLState())) {
                     // Since this is a transaction retry error, we
                     // roll back the transaction and sleep a

@@ -71,13 +71,4 @@ public class Transaction {
         conn = null;
 
     }
-
-    private void printSQLError(SQLException e, String source){
-        System.out.printf("ToDoTransaction.%s SQLERROR: { state => %s, cause => %s, message => %s }\n", source ,e.getSQLState(), e.getCause(), e.getMessage());
-    }
-
-    private void printError(Exception e, String source){
-        System.out.printf("ToDoTransaction.%s ERROR: { cause => %s, message => %s }\n", source, e.getCause(), e.getMessage());
-
-    }
 }

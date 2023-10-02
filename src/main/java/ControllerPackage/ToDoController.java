@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.postgresql.ds.PGSimpleDataSource;
 
@@ -16,6 +18,7 @@ import ViewPackage.ToDoView;
 import WrapperPackage.ToDoWrapper;
 
 public class ToDoController {
+    private static final Logger LOGGER = Logger.getLogger(ToDoController.class.getName());
 
     private PGSimpleDataSource ds;
     private CockroachHandler handler;
@@ -53,7 +56,7 @@ public class ToDoController {
                     welcome();
                 } catch (SQLException e) {
                     retryCount++;
-                    // TODO pass stuff to custom logger class;
+                    LOGGER.log(Level.SEVERE, e.toString(), e);
                 }
             }
 
@@ -62,7 +65,7 @@ public class ToDoController {
                 quit();
             }
         } catch (IOException e) {
-            // TODO: Pass stuff to custom logger class
+            LOGGER.log(Level.SEVERE, e.toString(), e);
             view.loginErrorView();
             quit();
         }
@@ -87,7 +90,7 @@ public class ToDoController {
             view.welcomeView(priorities);
             userMenu();
         } catch (SQLException e) {
-            // TODO Pass stuff to custom logger class
+            LOGGER.log(Level.SEVERE, e.toString(), e);
             view.databaseErrorView();
             quit();
         }
@@ -101,7 +104,7 @@ public class ToDoController {
                     this.beans = this.handler.getAll().getTodos();
                     refreshDB = false;
                 } catch (SQLException e) {
-                    // TODO Pass stuff to custom logger class
+                    LOGGER.log(Level.SEVERE, e.toString(), e);
                     view.databaseErrorView();
                     quit(); 
                 }
@@ -180,7 +183,7 @@ public class ToDoController {
                 }
             }while (isIncorrectInput);
         } catch (SQLException e) {
-            // TODO Pass stuff to custom logger class
+            LOGGER.log(Level.SEVERE, e.toString(), e);
             view.dbLookupError();
         }
     }
@@ -202,8 +205,6 @@ public class ToDoController {
         
     }
 
-    //Updating priority is vague and doesnt have proper input checking for y/n
-    //Exception handling worked just fine, though.
     private void update(ToDoBean bean){
         Boolean isIncorrectInput;
         String update = "";
@@ -257,7 +258,7 @@ public class ToDoController {
             this.refreshDB = true;
             view.updateSuccessView();
         } catch (SQLException e) {
-            // TODO Pass stuff to custom logger class
+            LOGGER.log(Level.SEVERE, e.toString(), e);
             view.updateErrorView();
         }
     }
@@ -305,13 +306,11 @@ public class ToDoController {
             this.refreshDB = true;
             view.createSuccessView();
         } catch (SQLException e) {
-            // TODO Pass stuff to custom logger class
+            LOGGER.log(Level.SEVERE, e.toString(), e);
             view.createErrorView();
         }
     }
 
-    //Change this to subtract one from user input to match array structure
-    //Also don't need error checking on getNumSelection
     private void deleteSelect(){
         view.deleteView();
         int input = this.gui.getNumSelection();
@@ -333,7 +332,7 @@ public class ToDoController {
             this.refreshDB = true;
             view.deleteSuccessView();
         } catch (SQLException e) {
-            // TODO Pass stuff to custom logger class
+            LOGGER.log(Level.SEVERE, e.toString(), e);
             view.deleteErrorView();
         }
     }
