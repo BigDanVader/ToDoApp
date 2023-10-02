@@ -12,6 +12,7 @@ import ControllerPackage.ToDoController;
 
 public class Main{
     public void main(String[] args){
+        
         final Logger LOGGER = Logger.getLogger(Main.class.getName());
         SimpleDateFormat format = new SimpleDateFormat("M-d_HHmmss");
         FileHandler fh = null;
