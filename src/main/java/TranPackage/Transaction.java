@@ -101,6 +101,9 @@ public class Transaction {
         close();
     }
 
+    /*
+     * This closes and sets the conn data member to null in preperation of being used again.
+     */
     private void close() throws SQLException{
         conn.close();
         conn = null;

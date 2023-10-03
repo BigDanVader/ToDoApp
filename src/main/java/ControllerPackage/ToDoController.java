@@ -52,6 +52,9 @@ public class ToDoController {
         login();
     }
 
+    /*Creates the connection to the database from the login info provided by the dbData.properties file.
+     * Advances the program if successful, and closes the program if not.
+    */
     private void login(){
         view.loginView();
 
@@ -82,6 +85,9 @@ public class ToDoController {
         }
     }
     
+    /*Creates a welcome screen for the user, along with a list of their priority todos.
+     * Closes the program if the database cannot be reached due to error.
+     */
     private void welcome(){
         ToDoBean bean = new ToDoBean();
         bean.setPriority("true");
@@ -98,8 +104,10 @@ public class ToDoController {
         }
     }
 
+    /*Creates a user menu for the user with a graphical representation of the todo items from the database.
+     * This method is intended to run indefinitly until the user elects to quit program.
+     */
     private void userMenu(){
-        //Loop is intended to run infinitely until user elects to quit program
         while (true){
             if (this.refreshDB){
                 try {
@@ -144,6 +152,10 @@ public class ToDoController {
         }
     }
         
+    /*This allows the user to pick a todo item from the list displayed in the userMenu() and have all  
+     * its relevant details displayed. Will not print the id of the todo.
+     * Also allows the user to update or delete the entry without having to return to userMenu().
+     */
     private void read(){
         int input;
         view.readView();
@@ -190,6 +202,9 @@ public class ToDoController {
         }
     }
 
+    /*This allows the user to pick a todo item from the list displayed in the userMenu() and sends
+     * it to the update() member function.
+     */
     private void updateSelect(){
         view.updateView();
         int input  = this.gui.getNumSelection();
@@ -207,6 +222,11 @@ public class ToDoController {
         
     }
 
+    /*This allows the user to update a field of the ToDoBean passed to it, then sends it to the database
+     * for the update to be done.
+     * 
+     * @param bean A ToDoBean object containing the representation of a database entry.
+     */
     private void update(ToDoBean bean){
         Boolean isIncorrectInput;
         String update = "";
@@ -265,6 +285,7 @@ public class ToDoController {
         }
     }
 
+    /*This allows the user to create a new todo and have it written to the attached database */
     private void create(){
         view.createView();
 
@@ -313,6 +334,9 @@ public class ToDoController {
         }
     }
 
+    /*This allows the user to pick a todo item from the list displayed in the userMenu() and sends
+     * it to the delete() member function to have the entry deleted from the database.
+     */
     private void deleteSelect(){
         view.deleteView();
         int input = this.gui.getNumSelection();
@@ -328,6 +352,11 @@ public class ToDoController {
         delete(bean);        
     }
 
+    /*This queries the attached database for an entry matching the UUID from the passed ToDoBean
+     * and deletes the entry if found.
+     * 
+     * @param bean A ToDoBean object containing the representation of a database entry.
+     */
     private void delete(ToDoBean bean){
         try {
             this.handler.delete(bean);

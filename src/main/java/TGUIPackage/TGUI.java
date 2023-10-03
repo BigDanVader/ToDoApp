@@ -72,6 +72,9 @@ public class TGUI {
         return update;
     }
 
+    /**
+     * This closes the Scanner object used by this class in preperation of ending the program.
+     */
     public void close(){
         if (in != null)
             in.close();

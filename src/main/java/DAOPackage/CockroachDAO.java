@@ -53,6 +53,15 @@ public class CockroachDAO {
         this.transaction = tran;
     }
 
+    /*This takes a String representation of an SQL command along with optional arguments, constructs a
+     * PreparedStatement, and executes the command. If there are results returned, they are packaged into
+     * a ToDoWrapper and returned to the calling method.
+     * 
+     * @param sqlCode a String representing an SQL commaand. May contain wildcards (example; SELECT ? FROM todos)
+     * @param args optional arguments for formatting sqlCode
+     * @return a ToDoWrapper object containing a representation of the results returned as well as the database
+     * metadata. Will return null if no results are produced by the sql command.
+     */
     private ToDoWrapper runSQL(String sqlCode, String... args) throws SQLException{
         ToDoWrapper results = new ToDoWrapper();
         int retryCount = 0;
@@ -122,6 +131,14 @@ public class CockroachDAO {
         return results;
     }
 
+    /*Takes the ResultSet and ResultSetMetaData produced by an sql query, turns both into seperate
+     * ArrayList objects, then packages them into a ToDoWrapper object and returns the object.
+     * 
+     * @param rs a ResultSet produced from an sql command
+     * @param rsmd a ResultSetMetaData object containing the metadata of the database
+     * @return a ToDoWrapper object containing a representation of the results returned as well as the database
+     * metadata.
+     */
     private ToDoWrapper wrap (ResultSet rs, ResultSetMetaData rsmd) throws SQLException{
         List<ToDoBean> results = new ArrayList<>();
         List<String> metadata = new ArrayList<>();
