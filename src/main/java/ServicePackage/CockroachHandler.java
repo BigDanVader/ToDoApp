@@ -21,7 +21,6 @@ public class CockroachHandler{
     private Transaction transaction;
     private CockroachDAO dao;
 
-    //find out how to call this in the overloaded constructor
     public CockroachHandler(){
         transaction = new Transaction();
         dao = new CockroachDAO(transaction);
@@ -57,37 +56,23 @@ public class CockroachHandler{
         return search("created", bean.getCreated());
     }
 
-    //TESTING: change search to bean.getPriority()
     public ToDoWrapper searchByPriority(ToDoBean bean) throws SQLException{
         return search("priority", bean.getPriority());
     }
 
-    public void update(ToDoBean bean){
-        try {
-            dao.update(bean.getUuid(), bean.getEvent(), bean.getCreated(), bean.getNotes(), bean.getPriority());
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
+    public void update(ToDoBean bean) throws SQLException{
+        dao.update(bean.getUuid(), bean.getEvent(), bean.getCreated(), bean.getNotes(), bean.getPriority());
     }
 
-    public void create(ToDoBean bean){
-        try {
-            dao.create(bean.getEvent(), bean.getCreated(), bean.getNotes(), bean.getPriority());
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    public void create(ToDoBean bean) throws SQLException{
+        dao.create(bean.getEvent(), bean.getCreated(), bean.getNotes(), bean.getPriority());
     }
 
-    public void delete(ToDoBean bean){
-        try {
-            dao.delete(bean.getUuid());
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
+    public void delete(ToDoBean bean) throws SQLException{
+        dao.delete(bean.getUuid());
     }
     
-    public Boolean isValidConnection(){
+    public Boolean isValidConnection() throws SQLException{
         if (transaction.getConnection() != null)
             return true;
         

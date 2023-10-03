@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import JavaBeanPackage.ToDoBean;
 import TranPackage.Transaction;
@@ -23,7 +25,7 @@ import WrapperPackage.ToDoWrapper;
  */
 
 public class CockroachDAO {
-
+    private static final Logger LOGGER = Logger.getLogger(CockroachDAO.class.getName());
     private static final int MAX_RETRY_COUNT = 3;
     private static final String RETRY_SQL_STATE = "40001";
 
@@ -97,6 +99,7 @@ public class CockroachDAO {
                 break;
 
             } catch (SQLException e) {
+                LOGGER.log(Level.SEVERE, e.toString(), e);
                 if (RETRY_SQL_STATE.equals(e.getSQLState())) {
                     // Since this is a transaction retry error, we
                     // roll back the transaction and sleep a
@@ -104,11 +107,9 @@ public class CockroachDAO {
                     // through the loop we sleep for a little
                     // longer than the last time
                     // (A.K.A. exponential backoff).
-                    System.out.printf("retryable exception occurred:\n    sql state = [%s]\n    message = [%s]\n    retry counter = %s\n", e.getSQLState(), e.getMessage(), retryCount);
                     this.transaction.rollback();
                     retryCount++;
                     int sleepMillis = (int)(Math.pow(2, retryCount) * 100) + rand.nextInt(100);
-                    System.out.printf("Hit 40001 retry error, sleeping %s milliseconds\n", sleepMillis);
 
                     try {
                         Thread.sleep(sleepMillis);
@@ -130,7 +131,6 @@ public class CockroachDAO {
         List<ToDoBean> results = new ArrayList<>();
         List<String> metadata = new ArrayList<>();
 
-        try {
             while (rs.next()){
                 ToDoBean bean = new ToDoBean();
                 bean.setUuid(rs.getString("id"));
@@ -140,10 +140,6 @@ public class CockroachDAO {
                 bean.setPriority(rs.getString("priority"));
                 results.add(bean);
             }
-        } catch (SQLException e) {
-            System.out.printf("PostgreSQLHandler.convert ERROR: { state => %s, cause => %s, message => %s }\n",
-                              e.getSQLState(), e.getCause(), e.getMessage());
-        }
 
         for (int i = 1; i <= rsmd.getColumnCount(); i++){
             String str = rsmd.getColumnName(i);
