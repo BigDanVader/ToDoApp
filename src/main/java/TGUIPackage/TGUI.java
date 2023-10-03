@@ -1,6 +1,5 @@
 package TGUIPackage;
 
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class TGUI {
@@ -35,7 +34,7 @@ public class TGUI {
         try {
             int sel = Integer.parseInt(input);
             return sel;
-        } catch (InputMismatchException e) {
+        } catch (NumberFormatException e) {
             // User has entered a non-int value. Passing -1 as a sentinal
             //to let calling program know there was an input error
             return -1;
