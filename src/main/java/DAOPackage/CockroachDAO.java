@@ -15,11 +15,10 @@ import JavaBeanPackage.ToDoBean;
 import TranPackage.Transaction;
 import WrapperPackage.ToDoWrapper;
 
-/**The CockroachDAO class takes a <code>Transaction</code> class object, establishes a connection
+/**The CockroachDAO class takes a {@link Transaction} class object, establishes a connection
  * to a CockroachDB database, and performs basic CRUD operations while returning results as needed.
  * 
  * @author Dan Luoma
- * @since 2023-10-03
  */
 
 public class CockroachDAO {
@@ -123,16 +122,6 @@ public class CockroachDAO {
         return results;
     }
 
-    
-    /** 
-     * This takes a result set and metadata from the <code>runsql</code> method, turns both results into
-     * <code>ArrayList</code> objects, the wraps them with <code>ToDoWrapper</code> to be used as a DTO.
-     * 
-     * @param rs the results from some search on the database
-     * @param rsmd the metadata of the database searched
-     * @return a DTO
-     * @throws SQLException
-     */
     private ToDoWrapper wrap (ResultSet rs, ResultSetMetaData rsmd) throws SQLException{
         List<ToDoBean> results = new ArrayList<>();
         List<String> metadata = new ArrayList<>();

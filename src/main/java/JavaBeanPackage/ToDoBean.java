@@ -6,7 +6,6 @@ import java.io.Serializable;
  * 
  * 
  * @author Dan Luoma
- * @since 2023-10-03
  */
 
 public class ToDoBean implements Serializable {

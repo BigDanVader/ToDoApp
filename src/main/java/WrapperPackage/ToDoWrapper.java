@@ -5,12 +5,10 @@ import java.util.List;
 
 import JavaBeanPackage.ToDoBean;
 
-/**ToDoWrapper is a wrapper class for transfering a list of ToDoBean class objects and
- * a list containing the CockroachDB metadata.
- * 
+/**
+ * The {@code ToDoWrapper} class is a wrapper class that provides contents of a database along with its metadata.
  * 
  * @author Dan Luoma
- * @since 2023-09-19
  */
 
 public class ToDoWrapper {
@@ -30,7 +28,6 @@ public class ToDoWrapper {
         this.metadata = md;
     }
 
-    //Consider making these methods return deep copies
     public List<ToDoBean> getTodos(){
         return this.todos;
     }

@@ -4,6 +4,11 @@ import java.util.List;
 
 import JavaBeanPackage.ToDoBean;
 
+/**
+ * The {@code ToDoView} provides a graphical output to the user of the ToDo application through the console.
+ * 
+ * @author Dan Luoma
+ */
 public class ToDoView {
 
     public ToDoView(){

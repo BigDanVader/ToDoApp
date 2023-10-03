@@ -2,6 +2,12 @@ package TGUIPackage;
 
 import java.util.Scanner;
 
+/**
+ * The {@code TGUI} class provides console input to the calling method using this object with included error checking.
+ * It is expected that the calling method will determine whether the input is valid in the context of its own parameters
+ * 
+ * @author Dan Luoma
+ */
 public class TGUI {
 
     private Scanner in;
@@ -10,6 +16,12 @@ public class TGUI {
         
     }
 
+    /**
+     * This gets a {@code char} from the user, checks that it is a valid char, and returns the user input.
+     * It is expected that a user will not be allowed to return a blank entry.
+     * 
+     * @return a {@code char} representing the user input
+     */
     public char getCharSelection(){
         in = new Scanner(System.in);
         String input = in.nextLine();
@@ -22,6 +34,12 @@ public class TGUI {
         return Character.toUpperCase(input.charAt(0));
     }
 
+    /**
+     * This gets an {@code int} from the user, checks that it is a valid int, and returns the user input.
+     * It is expected that a user will not be allowed to return a blank entry
+     * 
+     * @return a {@code int} representing the user input
+     */
     public int getNumSelection(){
         in = new Scanner(System.in);
         String input = in.nextLine();
@@ -41,6 +59,12 @@ public class TGUI {
         }
     }
 
+    /**
+     * This gets a {@code String} from the user and returns the user input.
+     * This method does allow for null input.
+     * 
+     * @return a {@code String} representing the user input
+     */
     public String getStringSelection(){
         in  = new Scanner(System.in);
         String update = in.nextLine();

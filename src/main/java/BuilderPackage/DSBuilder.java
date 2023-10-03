@@ -11,7 +11,6 @@ import org.postgresql.ds.PGSimpleDataSource;
  * with a CockroachDB database.
  * 
  * @author Dan Luoma
- * @since 2023-10-03
  */
 public class DSBuilder {
 

@@ -23,7 +23,6 @@ import WrapperPackage.ToDoWrapper;
  * connected database.
  * 
  * @author Dan Luoma
- * @since 2023-10-03
  */
 public class ToDoController {
     private static final Logger LOGGER = Logger.getLogger(ToDoController.class.getName());
