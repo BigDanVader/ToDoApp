@@ -15,13 +15,11 @@ import JavaBeanPackage.ToDoBean;
 import TranPackage.Transaction;
 import WrapperPackage.ToDoWrapper;
 
-/**The BasicDAO class recieves a DataSource object and issues SQL commands to the
- * associated database. Currently also prints given table, though this feature will 
- * be removed in the future.
- * 
+/**The CockroachDAO class takes a <code>Transaction</code> class object, establishes a connection
+ * to a CockroachDB database, and performs basic CRUD operations while returning results as needed.
  * 
  * @author Dan Luoma
- * @since 2023-09-17
+ * @since 2023-10-03
  */
 
 public class CockroachDAO {
@@ -33,30 +31,28 @@ public class CockroachDAO {
 
     private final Random rand = new Random();
 
+    /**
+     * Standard constructor.
+     */
     public CockroachDAO() {
     }
 
+    /**
+     * Constructor that sets the <code>Transaction</code> private data member.
+     */
     public CockroachDAO(Transaction tran){
         setTransaction(tran);
     }
 
+    
+    /** 
+     * Sets the <code>Transaction</code> private data member of the class.
+     * 
+     * @param tran a <code>Transaction</code> class object
+     */
     public void setTransaction(Transaction tran){
         this.transaction = tran;
     }
-
-    /**
-     * Run SQL code in a way that automatically handles the
-     * transaction retry logic so we don't have to duplicate it in
-     * various places.
-     *
-     * @param sqlCode a String containing the SQL code you want to
-     * execute.  Can have placeholders, e.g., "INSERT INTO accounts
-     * (id, balance) VALUES (?, ?)".
-     * @param args Option arguments ofr filling in placeholder in @param sqlCode
-     * @return a DTO that passes the database results and metadata. May or may not
-     * be used by calling class method.
-     * @throws SQLException
-     */
 
     private ToDoWrapper runSQL(String sqlCode, String... args) throws SQLException{
         ToDoWrapper results = new ToDoWrapper();
@@ -127,6 +123,16 @@ public class CockroachDAO {
         return results;
     }
 
+    
+    /** 
+     * This takes a result set and metadata from the <code>runsql</code> method, turns both results into
+     * <code>ArrayList</code> objects, the wraps them with <code>ToDoWrapper</code> to be used as a DTO.
+     * 
+     * @param rs the results from some search on the database
+     * @param rsmd the metadata of the database searched
+     * @return a DTO
+     * @throws SQLException
+     */
     private ToDoWrapper wrap (ResultSet rs, ResultSetMetaData rsmd) throws SQLException{
         List<ToDoBean> results = new ArrayList<>();
         List<String> metadata = new ArrayList<>();
@@ -153,23 +159,64 @@ public class CockroachDAO {
         return wrapper;
     }
 
+    /**
+     * Retrieves all todo entries from the database.
+     * 
+     * @return a <code>ToDoWrapper</code> containing all todo entries
+     * @throws SQLException
+     */
     public ToDoWrapper read() throws SQLException{
         return runSQL("SELECT id, event, created, notes, priority FROM todos");
     }
 
+    /**
+     * Retrieves todo entries from the database based on a speficied database column and a search term.
+     * 
+     * @param column a column in the database
+     * @param search a <code>String</code> representation of a column entry to be found in the todo database
+     * @return a <code>ToDoWrapper</code> object containing all todo entries meeting the search criteria.
+     * @throws SQLException
+     */
     public ToDoWrapper read(String column, String search) throws SQLException{
         String sql = String.format("SELECT id, event, created, notes, priority FROM todos WHERE %s = ?", column);
         return runSQL(sql, search);
     }
 
+    /**
+     * Updates a todo entry in the database.
+     * Intended to be used with a <code>ToDoBean</code> object previously pulled from the database and with updated values.
+     * Used for several search methods in the <code>CockroachHandler</code> class.
+     * 
+     * @param id a <code>String</code> representation of an <code>UUID</code> identifier
+     * @param event a description of the event  
+     * @param created the day and time the todo entry was created
+     * @param notes any notes appliciable to the todo entry
+     * @param priority a <code>String</code> representation of the priority status of the todo entry
+     * @throws SQLException
+     */
     public void update(String id, String event, String created, String notes, String priority) throws SQLException{
         runSQL("UPSERT INTO todos (id, event, created, notes, priority) VALUES (?, ?, ?, ?, ?)", id, event, created, notes, priority);
     }
 
+    /**
+     * Creates a new todo entry in the database.
+     * 
+     * @param event a description of the event
+     * @param created the day and time the todo entry was created
+     * @param notes any notes appliciable to the todo entry
+     * @param priority a <code>String</code> representation of the priority status of the todo entry
+     * @throws SQLException
+     */
     public void create(String event, String created, String notes, String priority) throws SQLException{
         runSQL("INSERT INTO todos (id, event, created, notes, priority) VALUES (gen_random_uuid(),?,?,?,?)", event, created, notes, priority);
     }
 
+    /**
+     * Finds and deletes a todo entry in the database.
+     * 
+     * @param id a UUID for the todo entry to delete
+     * @throws SQLException
+     */
     public void delete(String id) throws SQLException{
         runSQL("DELETE FROM todos WHERE id = ?", id);
     }

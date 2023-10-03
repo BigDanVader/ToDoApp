@@ -17,6 +17,14 @@ import TGUIPackage.TGUI;
 import ViewPackage.ToDoView;
 import WrapperPackage.ToDoWrapper;
 
+/**
+ * The <code>ToDoController</code> class connects to a CockroachDB database, provides views of the todos
+ * in that database through a console GUI, and allows for basic CRUD operations to be performed on the
+ * connected database.
+ * 
+ * @author Dan Luoma
+ * @since 2023-10-03
+ */
 public class ToDoController {
     private static final Logger LOGGER = Logger.getLogger(ToDoController.class.getName());
 
@@ -37,6 +45,10 @@ public class ToDoController {
         gui = new TGUI();
     }
 
+    /**
+     * This starts the business logic of the program, calling the various private methods
+     * in the class until the user decides to quit the program.
+     */
     public void start(){
         login();
     }
@@ -70,15 +82,6 @@ public class ToDoController {
             quit();
         }
     }
-
-    /**
-     * Creates a bean object and sets that bean's priority to true.
-     * This bean is used to call searchByPriority method from the
-     * @param handler object. This list of ToDoBeans that have a
-     * priority of true are then sent to the welcomeView method to be printed.
-     * 
-     * @throws SQLException
-     */
     
     private void welcome(){
         ToDoBean bean = new ToDoBean();

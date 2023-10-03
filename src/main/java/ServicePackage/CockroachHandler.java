@@ -18,17 +18,24 @@ import WrapperPackage.ToDoWrapper;
 
 public class CockroachHandler{
 
-    private Transaction transaction;
-    private CockroachDAO dao;
+    private Transaction transaction = new Transaction();
+    private CockroachDAO dao = new CockroachDAO(transaction);
 
+    /**
+     * Standard constructor.
+     */
     public CockroachHandler(){
-        transaction = new Transaction();
-        dao = new CockroachDAO(transaction);
+
     }
 
+    /**
+     * Constructor that passes the provided <code>DataSource</code> to the {@link #setDataSource(DataSource)} 
+     * class method.
+     * 
+     * @param ds a <code>DataSource</code> object provided by the caller
+     * @throws SQLException
+     */
     public CockroachHandler(DataSource ds) throws SQLException{
-        transaction = new Transaction();
-        dao = new CockroachDAO(transaction);
         setDataSource(ds);
     }
 

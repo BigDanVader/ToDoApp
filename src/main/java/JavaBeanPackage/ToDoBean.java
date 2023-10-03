@@ -2,11 +2,11 @@ package JavaBeanPackage;
 
 import java.io.Serializable;
 
-/**ToDoBean is a standard JavaBean class used as a DTO for the CockroachDAO class
+/**The <code>ToDoBean</code> class is a standard JavaBean class used as a DTO for the CockroachDAO class.
  * 
  * 
  * @author Dan Luoma
- * @since 2023-09-18
+ * @since 2023-10-03
  */
 
 public class ToDoBean implements Serializable {
