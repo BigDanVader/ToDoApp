@@ -13,7 +13,7 @@ public class Main {
     public static void main(String[] args) {
         FileHandler fh = null;
         try {
-            fh = new FileHandler("ErrorLog.log");
+            fh = new FileHandler("ErrorLog.log", true);
         } catch (SecurityException | IOException e) {
             e.printStackTrace();
         }

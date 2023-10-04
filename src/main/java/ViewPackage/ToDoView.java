@@ -1,6 +1,9 @@
 package ViewPackage;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.Scanner;
 
 import JavaBeanPackage.ToDoBean;
 
@@ -26,12 +29,21 @@ public class ToDoView {
     }
 
     public void welcomeView(List<ToDoBean> priority){
-        System.out.println("Welcome to the ToDo app.");
+        Scanner logo = null;
+        try {
+            logo = new Scanner(new File("Logo.txt"));
+            while (logo.hasNextLine())
+                System.out.println(logo.nextLine());
+        } catch (FileNotFoundException e) {
+            System.out.println("YouToDo");
+        }
+        System.out.println("A simple ToDo app.");
+        System.out.println("Dan Luoma   Version 1.0");
         System.out.println();
+        logo.close();
 
         if (priority.size() != 0){
-            System.out.println("*Your priority todos*");
-            System.out.println();
+            System.out.println("*Your priority ToDos*");
     
             for (ToDoBean b : priority){
                 System.out.print(b.getEvent());
@@ -40,14 +52,14 @@ public class ToDoView {
             }
         }
         else
-            System.out.println("No priority todos.");
+            System.out.println("No priority ToDos.");
         
         System.out.println();
     }
 
     public void menuView(List<ToDoBean> beans){
+        printToDos();
         int count = 1;
-        System.out.println("Your ToDos:");
         for (ToDoBean bean : beans){
             System.out.print(count + ": "); 
             System.out.print(bean.getEvent());
@@ -174,5 +186,11 @@ public class ToDoView {
 
     public void updatePriorityView() {
         System.out.print("Make priority, (Y)es or (N)o: ");
+    }
+
+    private void printToDos(){
+        System.out.printf("--------------------------------------------%n");
+        System.out.printf("                 Your ToDos                 %n");
+        System.out.printf("--------------------------------------------%n");
     }
 }
